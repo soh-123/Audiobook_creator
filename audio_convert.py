@@ -12,25 +12,29 @@ device = "cuda" if torch.cuda.is_available() else "cpu" # Get device
 print(TTS().list_models()) # List available 🐸TTS models
 tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device) # Initialize TTS
 
+import re
 def split_text(text, chunk_size=250):
     """dividing text into chunks of 250 character for a better audio quality"""
+    sentence_endings = re.compile(r'[.?!\n]')
+
     chunks = []
-    current_chunk = []
+    current_chunk = ""
     current_length = 0
 
-    for word in text.split():
-        word_length = len(word) + 1  # +1 to account for the space after each word
-        if current_length + word_length > chunk_size:
-            chunks.append(' '.join(current_chunk))
-            current_chunk = [word]
-            current_length = word_length
-        else:
-            current_chunk.append(word)
-            current_length += word_length
+    for word in sentence_endings.finditer(text):
+        sentence = text[current_length:word.end()]
+        current_length = word.end()
 
-    # Add the last chunk if it exists
+        if len(current_chunk) + len(sentence) <= chunk_size:
+            current_chunk += sentence
+        else:
+            if current_chunk:
+                chunks.append(current_chunk.strip())
+            current_chunk = sentence
+
     if current_chunk:
-        chunks.append(' '.join(current_chunk))
+        chunks.append(current_chunk.strip())
+
     return chunks
 
 
