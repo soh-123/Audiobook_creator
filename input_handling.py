@@ -1,34 +1,24 @@
 import fitz
 import os
 
-
-#DONE: convert the pdf file into a piece of text
-#DONE: clean the text from extra spaces
-#DONE: divide into chapters to be easier for the model to divide them into chunks for better quality
-
-def extract_text_from_pdf(pdf_path, output_txt_path, start, end):
-    """"convert the pdf file to one piece of text"""
+def pdf_to_chapters(pdf_path, start, end, content_list, output_dir):
+    """"convert the pdf file into one piece of text"""
     
-    # Open the PDF file
+    # Extract text from the PDF file
     doc = fitz.open(pdf_path)
         
-    # Create a text file for output
-    with open(output_txt_path, "w", encoding="utf-8") as output_file:
-        for page_num in range(start, end):
+    with open(f"{output_dir}/output.txt", "w", encoding="utf-8") as output_file:
+        for page_num in range(start-1, end):
             page = doc.load_page(page_num)
             text = page.get_text()
             if text:
-                text = text.replace('\t', ' ').replace('\n', ' ').replace('  ', ' ')
+                text = ' '.join(text.splitlines()).replace('  ', ' ')
                 output_file.write(text + "\n")
             else:
                 print(f"No text found on page {page_num + 1}")
 
-
-def chapters_generator(text_file, content_list, output_dir):
-    """dividing the text file into chapter files in a dedicated folder"""
-
     # Read the content of the text file
-    with open(text_file, 'r', encoding='utf-8') as file:
+    with open(f"{output_dir}/output.txt", 'r', encoding='utf-8') as file:
         lines = file.readlines()
     
     chapters = {}
@@ -44,6 +34,7 @@ def chapters_generator(text_file, content_list, output_dir):
             if start_keyword in line:
                 start_index = index
                 break
+        
         # If start index is not found, skip this chapter
         if start_index is None:
             print(f"Start keyword '{start_keyword}' not found for chapter '{chapter}'")
@@ -61,11 +52,27 @@ def chapters_generator(text_file, content_list, output_dir):
 
         # Collect lines for the current chapter
         chapters[chapter] = lines[start_index:end_index]
-    
+
     # Save each chapter to a separate file
     for chapter, chlines in chapters.items():
-        output_txt = f"ch{chapter}.txt"
         output_txt = os.path.join(output_dir, f"{chapter}.txt")
         with open(output_txt, 'w', encoding='utf-8') as file:
             file.writelines(chlines)
         print(f"Chapter '{chapter}' saved as {output_txt}")
+
+
+if __name__ == "__main__":
+    pdf_path = "/book.pdf"  # Path to the input PDF book
+    output_dir = "/directory" #Path to the book folder 
+    from_page = 1 #start page
+    to_page = 180 #end page
+
+    #Enter chapters manually to be divided
+    content_list = [
+    ('Introduction', 'Introduction'),
+    ('Ch1', 'CHAPTER ONE'),
+    ('Ch2', 'CHAPTER TWO'),
+    ('Ch3', 'CHAPTER THREE'),
+    ]
+
+    pdf_to_chapters(pdf_path=pdf_path, output_dir=output_dir, start=from_page, end=to_page, content_list=content_list)
