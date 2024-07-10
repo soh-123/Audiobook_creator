@@ -1,13 +1,20 @@
 from tkinter import *
 from input_handling import pdf_to_chapters
+from audio_convert import audio_converter
 
 def add_row():
     """Add a new row to the table."""
-    chapter_entry = Entry(frame)
-    keyword_entry = Entry(frame)
-    chapter_entry.grid(row=len(entries)+1, column=0)
+    row_number = len(entries)
+    chapter = Label(chapters, text=f"ch{row_number}")
+    chapter.grid(row=len(entries)+1, column=0)
+
+    keyword_entry = Entry(chapters)
     keyword_entry.grid(row=len(entries)+1, column=1)
-    entries.append((chapter_entry, keyword_entry))
+
+    convert_button = Button(chapters, text="Convert", command=audio_converter)
+    convert_button.grid(row=len(entries)+1, column=2)
+
+    entries.append((chapter, keyword_entry))
 
 def get_content_list():
     """Retrieve the content list from the table."""
@@ -33,45 +40,48 @@ window = Tk()
 window.title("Audiobook Generator")
 window.config(padx=50, pady=50)
 
-#Table
-frame = Frame(window)
-frame.grid(row=0, column=4, columnspan=2)
+#Chapters Table
+chapters = Frame(window)
+chapters.grid(row=0, column=4, columnspan=2)
 
-Label(frame, text="Chapter").grid(row=0, column=0)
-Label(frame, text="Start Keyword").grid(row=0, column=1)
+Label(chapters, text="Chapter").grid(row=0, column=0)
+Label(chapters, text="Start Keyword").grid(row=0, column=1)
 
 entries = [] # Store entries in a list
 add_row() # Add the first row
-add_button = Button(frame, text="Add Row", command=add_row)
+add_button = Button(chapters, text="Add Row", command=add_row)
 add_button.grid(row=0, column=2)
 
 #labels
-pdf_label = Label(text="Paste PDF file path:")
+file_uploader = Frame(window)
+file_uploader.grid(row=0, column=0, columnspan=3)
+
+pdf_label = Label(file_uploader, text="Paste PDF file path:")
 pdf_label.grid(row=0, column=0)
 
-directory_label = Label(text="Paste Directory output path:")
+directory_label = Label(file_uploader, text="Paste Directory output path:")
 directory_label.grid(row=1, column=0)
 
-from_page = Label(text="From Page:")
+from_page = Label(file_uploader, text="From Page:")
 from_page.grid(row=2, column=0)
 
-to_page = Label(text="To Page:")
-to_page.grid(row=2, column=2)
+to_page = Label(file_uploader, text="To Page:")
+to_page.grid(row=3, column=0)
 
 
 #entries
-pdf_entry = Entry(width=38)
+pdf_entry = Entry(file_uploader, width=38)
 pdf_entry.grid(row=0, column=1, columnspan=2)
 pdf_entry.focus()
 
-directory_entry = Entry(width=38)
+directory_entry = Entry(file_uploader, width=38)
 directory_entry.grid(row=1, column=1, columnspan=2)
 
-from_page_entry = Entry(width=8)
+from_page_entry = Entry(file_uploader, width=8)
 from_page_entry.grid(row=2, column=1)
 
-to_page_entry = Entry(width=8)
-to_page_entry.grid(row=2, column=3)
+to_page_entry = Entry(file_uploader, width=8)
+to_page_entry.grid(row=3, column=1)
 
 
 #buttons
@@ -115,10 +125,11 @@ window.mainloop()
 
 
 #Later
-#TODO: Combine the converted chapters into one audio file with limit of 4 hours
+#TODO: work on the UX of GUI
+#TODO: audio converter
+#TODO: File upload
 
 
 #TODO: automate what we were doing on capcut, adding the audio on a standard cover
 #TODO: automate the file uploading on youtube
-#TODO: create an interface for the whole project to make it easier to use
 #TODO: asign an audio voice depend on the gender of the writer to mimic the feeling
