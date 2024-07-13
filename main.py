@@ -1,4 +1,7 @@
+import os
 from tkinter import *
+from tkinter import ttk
+from tkinter import filedialog
 from input_handling import pdf_to_chapters
 from audio_convert import audio_converter
 
@@ -11,7 +14,11 @@ def add_row():
     keyword_entry = Entry(chapters)
     keyword_entry.grid(row=len(entries)+1, column=1)
 
-    convert_button = Button(chapters, text="Convert", command=audio_converter)
+    output_dir = directory_entry.get()
+    input_file_path = os.path.join(output_dir, f"{chapter}.txt")
+    output_file_path = os.path.join(output_dir, f"/audio")
+
+    convert_button = Button(chapters, text="Convert", command=audio_converter(textfile_path=input_file_path, speaker_voice=voices.get(), output_dir=output_file_path))
     convert_button.grid(row=len(entries)+1, column=2)
 
     entries.append((chapter, keyword_entry))
@@ -33,12 +40,91 @@ def generate():
     start_page = int(from_page_entry.get())
     end_page = int(to_page_entry.get())
     content_list = get_content_list()
-    pdf_to_chapters(pdf_path, start_page, end_page, content_list, output_dir)
+    pdf_to_chapters(pdf_path, start_page, end_page, content_list, output_dir)  
 
+def pdf_upload():
+    """Open file browser for pdf"""
+    filename = filedialog.askopenfilename(initialdir = "/", 
+                                          title = "Select a File",
+                                          filetypes = (("PDF files", "*.pdf"), ("all files", "*.*")))
+    pdf_entry.config(state=NORMAL)
+    pdf_entry.delete(0, END)
+    pdf_entry.insert(0, filename)
+    pdf_entry.config(state='readonly')
+
+def browseDirectory():
+    """Open file browser for output directory"""
+    foldername = filedialog.askdirectory(initialdir = "/", title = "Select a Folder")
+    
+    directory_entry.config(state=NORMAL)
+    directory_entry.delete(0, END)
+    directory_entry.insert(0, foldername)
+    directory_entry.config(state='readonly')
+
+
+def get_voice_files(directory):
+    """Get the list of voice files from the specified directory."""
+    voice_files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
+    return voice_files
+      
 # ---------------------------- UI SETUP ---------------------------
 window = Tk()
 window.title("Audiobook Generator")
 window.config(padx=50, pady=50)
+
+
+#File Uploader
+file_uploader = Frame(window)
+file_uploader.grid(row=0, column=0, columnspan=3)
+
+pdf_label = Label(file_uploader, text="Upload PDF File")
+pdf_label.grid(row=0, column=0)
+
+pdf_button = Button(file_uploader, text="Upload", command=pdf_upload)
+pdf_button.grid(row=0, column=1)
+
+pdf_entry = Entry(file_uploader, width=38, state='readonly')
+pdf_entry.grid(row=1, column=0, columnspan=2)
+
+
+#Output Path
+directory_label = Label(file_uploader, text="Choose Output Folder:")
+directory_label.grid(row=2, column=0)
+
+directory_button = Button(file_uploader, text="Browse", command=browseDirectory)
+directory_button.grid(row=2, column=1)
+
+directory_entry = Entry(file_uploader, width=38, state='readonly')
+directory_entry.grid(row=3, column=1, columnspan=2)
+
+
+#Audio Selector
+Label(file_uploader, text="Choose Audio").grid(row=4, column=0)
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+voices_dir = os.path.join(script_dir, 'voices')
+voice_files = get_voice_files(voices_dir)
+
+voices = ttk.Combobox(file_uploader, state="readonly", values=voice_files)
+voices.grid(row=4, column=1)
+voices.current(0)
+
+
+#begining & ending
+from_page = Label(file_uploader, text="From Page:")
+from_page.grid(row=5, column=0)
+
+from_page_entry = Entry(file_uploader, width=8)
+from_page_entry.grid(row=5, column=1)
+
+to_page = Label( file_uploader, text="To Page:")
+to_page.grid(row=6, column=0)
+
+to_page_entry = Entry(file_uploader, width=8)
+to_page_entry.grid(row=6, column=1)
+
+generate_button = Button(file_uploader, text="Generate", command=generate)
+generate_button.grid(row=7, column=0, columnspan=2)
 
 #Chapters Table
 chapters = Frame(window)
@@ -52,84 +138,17 @@ add_row() # Add the first row
 add_button = Button(chapters, text="Add Row", command=add_row)
 add_button.grid(row=0, column=2)
 
-#labels
-file_uploader = Frame(window)
-file_uploader.grid(row=0, column=0, columnspan=3)
-
-pdf_label = Label(file_uploader, text="Paste PDF file path:")
-pdf_label.grid(row=0, column=0)
-
-directory_label = Label(file_uploader, text="Paste Directory output path:")
-directory_label.grid(row=1, column=0)
-
-from_page = Label(file_uploader, text="From Page:")
-from_page.grid(row=2, column=0)
-
-to_page = Label(file_uploader, text="To Page:")
-to_page.grid(row=3, column=0)
-
-
-#entries
-pdf_entry = Entry(file_uploader, width=38)
-pdf_entry.grid(row=0, column=1, columnspan=2)
-pdf_entry.focus()
-
-directory_entry = Entry(file_uploader, width=38)
-directory_entry.grid(row=1, column=1, columnspan=2)
-
-from_page_entry = Entry(file_uploader, width=8)
-from_page_entry.grid(row=2, column=1)
-
-to_page_entry = Entry(file_uploader, width=8)
-to_page_entry.grid(row=3, column=1)
-
-
-#buttons
-generate_button = Button(text="Generate", command=generate)
-generate_button.grid(row=4, column=1, columnspan=2)
 
 window.mainloop()
-
-# from audio_convert import extract_text_from_pdf, chapters_generator
-# from audio_convert import chunk_converter, combine_chunks
-
-
-# if __name__ == "__main__":
-#     pdf_path = "./book.pdf"  # Path to the input PDF book
-#     txt_path = "./book.txt"  # Path to the output text book
-#     output_dir = "./book-folder" #Path to the book folder 
-#     from_page = 15 #start page
-#     to_page = 782 #end page
-
-#     #Enter chapters manually to be divided
-#     content_list = [
-#     ('Introduction', 'PREFACE'),
-#     ('Ch1', 'Chapter 1'),
-#     ('Ch2', 'Chapter 2'),
-#     ('Ch3', 'Chapter 3'),
-#     ('Ch4', 'Chapter 4'),
-#     ('Ch5', 'Chapter 5'),
-#     ]
-
-#     extract_text_from_pdf(pdf_path, txt_path, from_page, to_page)
-#     chapters_generator(txt_path, content_list, output_dir)
-
-
-#     textfile_path = "./book-folder/ch1" #converting chapter per chapter
-#     speaker_voice = "Djano.mp3" #speaker name
-#     audio_output_dir = "/audio-folder" #path to the audio output
-#     prefix = "ch1"  # Example prefix for chapter 1
-    
-#     chunk_converter(textfile_path, speaker_voice, audio_output_dir, prefix)
-#     combine_chunks(audio_output_dir, prefix, f"{prefix}_combined.wav")
 
 
 #Later
 #TODO: work on the UX of GUI
-#TODO: audio converter
-#TODO: File upload
+#DONE: audio converter
+#DONE: File upload
 
 
 #TODO: automate what we were doing on capcut, adding the audio on a standard cover
 #TODO: automate the file uploading on youtube
 #TODO: asign an audio voice depend on the gender of the writer to mimic the feeling
+#TODO: Generate the YT cover automatically
