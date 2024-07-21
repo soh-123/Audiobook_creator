@@ -4,43 +4,19 @@ from tkinter import ttk
 from tkinter import filedialog
 from input_handling import pdf_to_chapters
 from audio_convert import audio_converter
+from chapters_handler import ChapterHandler
 
-def add_row():
-    """Add a new row to the table."""
-    row_number = len(entries)
-    chapter = Label(chapters, text=f"ch{row_number}")
-    chapter.grid(row=len(entries)+1, column=0)
-
-    keyword_entry = Entry(chapters)
-    keyword_entry.grid(row=len(entries)+1, column=1)
-
-    output_dir = directory_entry.get()
-    input_file_path = os.path.join(output_dir, f"{chapter}.txt")
-    output_file_path = os.path.join(output_dir, f"/audio")
-
-    convert_button = Button(chapters, text="Convert", command=audio_converter(textfile_path=input_file_path, speaker_voice=voices.get(), output_dir=output_file_path))
-    convert_button.grid(row=len(entries)+1, column=2)
-
-    entries.append((chapter, keyword_entry))
-
-def get_content_list():
-    """Retrieve the content list from the table."""
-    content_list = []
-    for chapter_entry, keyword_entry in entries:
-        chapter = chapter_entry.get()
-        keyword = keyword_entry.get()
-        if chapter and keyword:
-            content_list.append((chapter, keyword))
-    return content_list
 
 def generate():
     """Collect inputs and call the pdf_to_chapters function."""
     pdf_path = pdf_entry.get()
-    output_dir = directory_entry.get()
     start_page = int(from_page_entry.get())
     end_page = int(to_page_entry.get())
-    content_list = get_content_list()
-    pdf_to_chapters(pdf_path, start_page, end_page, content_list, output_dir)  
+    content_list = chapter_handler.get_content_list()
+    output_dir = directory_entry.get()
+    print(f"here's the content list{content_list}")
+    pdf_to_chapters(pdf_path=pdf_path, start=start_page, end=end_page, content_list=content_list, output_dir=output_dir)  
+
 
 def pdf_upload():
     """Open file browser for pdf"""
@@ -52,6 +28,7 @@ def pdf_upload():
     pdf_entry.insert(0, filename)
     pdf_entry.config(state='readonly')
 
+
 def browseDirectory():
     """Open file browser for output directory"""
     foldername = filedialog.askdirectory(initialdir = "/", title = "Select a Folder")
@@ -59,7 +36,6 @@ def browseDirectory():
     directory_entry.config(state=NORMAL)
     directory_entry.delete(0, END)
     directory_entry.insert(0, foldername)
-    directory_entry.config(state='readonly')
 
 
 def get_voice_files(directory):
@@ -72,10 +48,14 @@ window = Tk()
 window.title("Audiobook Generator")
 window.config(padx=50, pady=50)
 
+# Make the window resizable
+window.rowconfigure(0, weight=1)
+window.columnconfigure(0, weight=1)
+window.columnconfigure(4, weight=1)
 
 #File Uploader
 file_uploader = Frame(window)
-file_uploader.grid(row=0, column=0, columnspan=3)
+file_uploader.grid(row=0, column=0, columnspan=3, sticky="nsew")
 
 pdf_label = Label(file_uploader, text="Upload PDF File")
 pdf_label.grid(row=0, column=0)
@@ -126,26 +106,35 @@ to_page_entry.grid(row=6, column=1)
 generate_button = Button(file_uploader, text="Generate", command=generate)
 generate_button.grid(row=7, column=0, columnspan=2)
 
+
 #Chapters Table
-chapters = Frame(window)
-chapters.grid(row=0, column=4, columnspan=2)
+chapters_frame = Frame(window)
+chapters_frame.grid(row=0, column=4, sticky='nsew')
+
+chapters_frame.rowconfigure(0, weight=1)
+chapters_frame.columnconfigure(0, weight=1)
+
+canvas = Canvas(chapters_frame)
+scrollbar = Scrollbar(chapters_frame, orient='vertical', command=canvas.yview)
+canvas.configure(yscrollcommand=scrollbar.set)
+chapters = Frame(canvas)
+chapters.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+
+canvas.create_window((0, 0), window=chapters, anchor="nw")
+canvas.pack(fill=BOTH, side=LEFT, expand=TRUE)
+scrollbar.pack_forget()
 
 Label(chapters, text="Chapter").grid(row=0, column=0)
 Label(chapters, text="Start Keyword").grid(row=0, column=1)
 
-entries = [] # Store entries in a list
-add_row() # Add the first row
-add_button = Button(chapters, text="Add Row", command=add_row)
+# Initialize the ChapterHandler
+chapter_handler = ChapterHandler(chapters, canvas, scrollbar, directory_entry, voices)
+chapter_handler.add_row()  # Add the first row
+
+add_button = Button(chapters, text="Add Row", command=chapter_handler.add_row)
 add_button.grid(row=0, column=2)
 
-
 window.mainloop()
-
-
-#Later
-#TODO: work on the UX of GUI
-#DONE: audio converter
-#DONE: File upload
 
 
 #TODO: automate what we were doing on capcut, adding the audio on a standard cover
