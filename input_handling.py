@@ -62,17 +62,17 @@ def pdf_to_chapters(pdf_path, start, end, content_list, output_dir):
 
 
 if __name__ == "__main__":
-    pdf_path = "/book.pdf"  # Path to the input PDF book
-    output_dir = "/directory" #Path to the book folder 
-    from_page = 1 #start page
-    to_page = 180 #end page
+    pdf_path = "/Users/sohierelsafty/Downloads/How to Own Your Own Mind ( PDFDrive ).pdf"  # Path to the input PDF book
+    output_dir = "/Users/sohierelsafty/Desktop/how to own your own mind" #Path to the book folder 
+    from_page = 5 #start page
+    to_page = 183 #end page
 
     #Enter chapters manually to be divided
     content_list = [
-    ('Introduction', 'Introduction'),
-    ('Ch1', 'CHAPTER ONE'),
-    ('Ch2', 'CHAPTER TWO'),
-    ('Ch3', 'CHAPTER THREE'),
+    ('Ch0', 'Introduction to How to Own Your Own Mind'),
+    ('Ch1', 'CHAPTER ONE Creative Vision'),
+    ('Ch2', 'Now, let us go back to the question as to how Mr. Edison came to think of'),
+    ('Ch3', 'Will you now cite some other examples of the practical application of imagination?'),
     ]
 
     pdf_to_chapters(pdf_path=pdf_path, output_dir=output_dir, start=from_page, end=to_page, content_list=content_list)

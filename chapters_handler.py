@@ -1,16 +1,21 @@
 import os
 from tkinter import *
+from tkinter import ttk  # Make sure to import ttk
 from audio_convert import audio_converter
 
+def get_voice_files(directory):
+    """Get list of voice files in the specified directory."""
+    return [f for f in os.listdir(directory) if f.endswith('.mp3') or f.endswith('.wav')]
 
 class ChapterHandler:
-    def __init__(self, chapters_frame, canvas, scrollbar, directory_entry, voices):
+    def __init__(self, chapters_frame, canvas, scrollbar, directory_entry, voices, voices_dir):
         self.entries = []
         self.chapters_frame = chapters_frame
         self.canvas = canvas
         self.scrollbar = scrollbar
         self.directory_entry = directory_entry
         self.voices = voices
+        self.voices_dir = voices_dir
 
     def add_row(self):
         """Add a new row to the table"""
@@ -23,11 +28,11 @@ class ChapterHandler:
         keyword_entry = Entry(self.chapters_frame)
         keyword_entry.grid(row=row_number + 1, column=1, sticky='ew')
 
-        convert_button = Button(self.chapters_frame, text="Convert", command=lambda: self.convert_audio(chapter_label_text, status_label))
-        convert_button.grid(row=row_number + 1, column=2, sticky='ew')
-
         status_label = Label(self.chapters_frame, text="", fg="green")
         status_label.grid(row=row_number + 1, column=3, sticky='ew')
+
+        convert_button = Button(self.chapters_frame, text="Convert", command=lambda: self.convert_audio(chapter_label_text, status_label))
+        convert_button.grid(row=row_number + 1, column=2, sticky='ew')
 
         self.entries.append((chapter_label, keyword_entry))
 
@@ -37,7 +42,6 @@ class ChapterHandler:
             self.scrollbar.pack(fill=Y, side=LEFT, expand=FALSE)
         else:
             self.scrollbar.pack_forget()
-
 
     def convert_audio(self, chapter_label_text, status_label):
         """Convert text to audio."""
@@ -49,10 +53,11 @@ class ChapterHandler:
         if not os.path.exists(audio_dir):
             os.makedirs(audio_dir, exist_ok=True)
 
-        audio_converter(textfile_path=input_file_path, speaker_voice=self.voices.get(), output_dir=audio_dir)
+        voice_pick = os.path.join(self.voices_dir, self.voices.get())
+        print(f"Converting {input_file_path} using voice {self.voices.get()}")
+        audio_converter(textfile_path=input_file_path, speaker_voice=voice_pick, output_dir=audio_dir)
         
         status_label.config(text=f"Conversion for {chapter_label_text} completed!")
-
 
     def get_content_list(self):
         """Retrieve the content list from the table."""
@@ -64,4 +69,3 @@ class ChapterHandler:
             content_list.append((chapter, keyword))
            
         return content_list
-        

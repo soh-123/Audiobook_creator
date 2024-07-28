@@ -40,8 +40,7 @@ def browseDirectory():
 
 def get_voice_files(directory):
     """Get the list of voice files from the specified directory."""
-    voice_files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
-    return voice_files
+    return [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
       
 # ---------------------------- UI SETUP ---------------------------
 window = Tk()
@@ -128,7 +127,7 @@ Label(chapters, text="Chapter").grid(row=0, column=0)
 Label(chapters, text="Start Keyword").grid(row=0, column=1)
 
 # Initialize the ChapterHandler
-chapter_handler = ChapterHandler(chapters, canvas, scrollbar, directory_entry, voices)
+chapter_handler = ChapterHandler(chapters, canvas, scrollbar, directory_entry, voices, voices_dir)
 chapter_handler.add_row()  # Add the first row
 
 add_button = Button(chapters, text="Add Row", command=chapter_handler.add_row)
@@ -137,7 +136,9 @@ add_button.grid(row=0, column=2)
 window.mainloop()
 
 
+#TODO: Automate the chapter dividing part where I don't have to go back and check them by myself
+#TODO: Generate the YT cover automatically
+
 #TODO: automate what we were doing on capcut, adding the audio on a standard cover
 #TODO: automate the file uploading on youtube
-#TODO: asign an audio voice depend on the gender of the writer to mimic the feeling
-#TODO: Generate the YT cover automatically
+
