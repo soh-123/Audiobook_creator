@@ -1,4 +1,4 @@
-# Audiobook_creator
+# Audiobook Generator
 
 ## Project Overview
 Audiobook AI is a project that aims to convert text content, specifically books, into high-quality audio files using TTS (Text-to-Speech) models. The project includes functionalities for text extraction from PDF, chunking text for better audio quality, converting text to speech, and combining audio chunks into a single audio file.
