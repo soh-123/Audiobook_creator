@@ -13,7 +13,7 @@ def convert_mp3_to_wav(mp3_path, wav_path):
     audio = AudioSegment.from_mp3(mp3_path)
     audio.export(wav_path, format="wav")
 
-def audio_converter(textfile, textbox_text, speaker_voice, output_audio, history):
+def audio_converter(textfile, textbox_text, speaker_voice, history):
     """
     Convert text or text file to audio with a given voice.
     """
@@ -28,6 +28,9 @@ def audio_converter(textfile, textbox_text, speaker_voice, output_audio, history
         label = textbox_text[:30] + ("..." if len(textbox_text) > 30 else "")
     else:
         return history, "Please upload a text file or enter text."
+    
+    if speaker_voice is None:
+        return history, "Please upload a voice file."
     
      # Save voice file to temp location if necessary
     with tempfile.TemporaryDirectory() as tempdir:
@@ -46,7 +49,7 @@ def audio_converter(textfile, textbox_text, speaker_voice, output_audio, history
                     file_path=output_audio, 
                     split_sentences=True)
     
-    # Save to a temp file Gradio can access (copy to non-temp if needed)
+    # Make file available after tempdir closes
     output_copy = tempfile.NamedTemporaryFile(delete=False, suffix=".wav")
     with open(output_audio, "rb") as src, open(output_copy.name, "wb") as dst:
         dst.write(src.read())
