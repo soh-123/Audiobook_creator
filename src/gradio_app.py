@@ -1,7 +1,7 @@
 import gradio as gr
-from src.pdf_splitter import pdf_to_chapters
-from src.capCut import gradio_callback
-from src.audio_convert import audio_converter
+from pdf_splitter import pdf_to_chapters
+from capCut import gradio_callback
+from audio_convert import audio_converter
 
 
 def display_gallery(history):
@@ -34,6 +34,7 @@ with gr.Blocks() as demo:
                 value=[],
                 interactive=False
             )
+            chapter_files = gr.Files(label="Download & Preview Chapters")
             split_btn.click(
                 pdf_to_chapters, 
                 inputs=[pdf_input, from_page, to_page, chapters_df], 
